@@ -12,7 +12,7 @@ defmodule ScenicStarter.Scene.Primitives do
 
   @bird_path :code.priv_dir(:scenic_starter)
              |> Path.join("/static/images/cyanoramphus_zealandicus_1849.jpg")
-  @bird_hash Scenic.Cache.Hash.file!( @bird_path, :sha )
+  @bird_hash Scenic.Cache.Hash.file!(@bird_path, :sha)
 
   @bird_width 100
   @bird_height 128
