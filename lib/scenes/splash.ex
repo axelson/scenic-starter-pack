@@ -31,6 +31,9 @@ defmodule ScenicStarter.Scene.Splash do
 
   # --------------------------------------------------------
   def init(first_scene, opts) do
+    # Register this process so that we can reload it by killing it
+    Process.register(self(), __MODULE__)
+
     viewport = opts[:viewport]
 
     # calculate the transform that centers the parrot in the viewport

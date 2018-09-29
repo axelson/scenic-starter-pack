@@ -74,6 +74,9 @@ defmodule ScenicStarter.Scene.Transforms do
 
   # --------------------------------------------------------
   def init(_, _opts) do
+    # Register this process so that we can reload it by killing it
+    Process.register(self(), __MODULE__)
+
     push_graph(@graph)
 
     state = %{

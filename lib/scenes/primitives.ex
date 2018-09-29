@@ -118,6 +118,9 @@ defmodule ScenicStarter.Scene.Primitives do
          |> Notes.add_to_graph(@notes)
 
   def init(_, _opts) do
+    # Register this process so that we can reload it by killing it
+    Process.register(self(), __MODULE__)
+
     # load the parrot texture into the cache
     Scenic.Cache.File.load(@bird_path, @bird_hash)
 

@@ -6,7 +6,7 @@ use Mix.Config
 config :scenic_starter, :viewport, %{
   name: :main_viewport,
   size: {700, 600},
-  default_scene: {ScenicStarter.Scene.Splash, ScenicStarter.Scene.Sensor},
+  default_scene: {ScenicStarter.Scene.Splash, ScenicStarter.Scene.Components},
   drivers: [
     %{
       module: Scenic.Driver.Glfw,
@@ -15,6 +15,11 @@ config :scenic_starter, :viewport, %{
     }
   ]
 }
+
+# Configure reload callback of ExSync so that we are notified when a file is changed
+config :exsync,
+  reload_timeout: 75,
+  reload_callback: {GenServer, :call, [ScenicStarter.Component.Nav, :reload_current_scene]}
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

@@ -26,6 +26,9 @@ defmodule ScenicStarter.Scene.Sensor do
 
   # --------------------------------------------------------
   def init(_, opts) do
+    # Register this process so that we can reload it by killing it
+    Process.register(self(), __MODULE__)
+
     {:ok, %ViewPort.Status{size: {vp_width, _}}} =
       opts[:viewport]
       |> ViewPort.info()

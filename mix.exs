@@ -25,6 +25,7 @@ defmodule ScenicStarter.MixProject do
     [
       {:scenic, "~> 0.8"},
       {:scenic_driver_glfw, "~> 0.8"},
+      {:exsync, git: "https://github.com/falood/exsync", branch: "master"},
 
       # These deps are optional and are included as they are often used.
       # If your app doesn't need them, they are safe to remove.
