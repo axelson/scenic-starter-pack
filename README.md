@@ -29,6 +29,8 @@ or
 
     iex -S mix
 
+Then edit a file and you will see the changes reflected live!
+
 # How it works
 
 Live compilation is provided
