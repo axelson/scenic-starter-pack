@@ -16,10 +16,15 @@ config :scenic_starter, :viewport, %{
   ]
 }
 
-# Configure reload callback of ExSync so that we are notified when a file is changed
-config :exsync,
-  reload_timeout: 75,
-  reload_callback: {GenServer, :call, [ScenicStarter.Component.Nav, :reload_current_scene]}
+case Mix.env() do
+  :dev ->
+    config :exsync,
+      reload_timeout: 75,
+      reload_callback: {GenServer, :call, [ScenicLiveReload, :reload_current_scene]}
+
+  _ ->
+    nil
+end
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

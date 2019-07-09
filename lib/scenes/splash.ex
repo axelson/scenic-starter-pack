@@ -14,7 +14,7 @@ defmodule ScenicStarter.Scene.Splash do
 
   @parrot_path :code.priv_dir(:scenic_starter)
                |> Path.join("/static/images/scenic_parrot.png")
-  @parrot_hash Scenic.Cache.Hash.file!(@parrot_path, :sha)
+  @parrot_hash Scenic.Cache.Support.Hash.file!(@parrot_path, :sha)
 
   @parrot_width 62
   @parrot_height 114
@@ -31,9 +31,6 @@ defmodule ScenicStarter.Scene.Splash do
 
   # --------------------------------------------------------
   def init(first_scene, opts) do
-    # Register this process so that we can reload it by killing it
-    Process.register(self(), __MODULE__)
-
     viewport = opts[:viewport]
 
     # calculate the transform that centers the parrot in the viewport
@@ -45,12 +42,10 @@ defmodule ScenicStarter.Scene.Splash do
     }
 
     # load the parrot texture into the cache
-    Scenic.Cache.File.load(@parrot_path, @parrot_hash)
+    Scenic.Cache.Static.Texture.load(@parrot_path, @parrot_hash)
 
     # move the parrot into the right location
-    graph =
-      Graph.modify(@graph, :parrot, &update_opts(&1, translate: position))
-      |> push_graph()
+    graph = Graph.modify(@graph, :parrot, &update_opts(&1, translate: position))
 
     # start a very simple animation timer
     {:ok, timer} = :timer.send_interval(@animate_ms, :animate)
@@ -63,7 +58,7 @@ defmodule ScenicStarter.Scene.Splash do
       alpha: 0
     }
 
-    {:ok, state}
+    {:ok, state, push: graph}
   end
 
   # --------------------------------------------------------
@@ -87,11 +82,13 @@ defmodule ScenicStarter.Scene.Splash do
 
   def handle_info(:animate, %{alpha: alpha, graph: graph} = state) do
     graph =
-      graph
-      |> Graph.modify(:parrot, &update_opts(&1, fill: {:image, {@parrot_hash, alpha}}))
-      |> push_graph()
+      Graph.modify(
+        graph,
+        :parrot,
+        &update_opts(&1, fill: {:image, {@parrot_hash, alpha}})
+      )
 
-    {:noreply, %{state | graph: graph, alpha: alpha + 2}}
+    {:noreply, %{state | graph: graph, alpha: alpha + 2}, push: graph}
   end
 
   # --------------------------------------------------------

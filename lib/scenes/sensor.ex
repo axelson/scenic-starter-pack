@@ -21,14 +21,17 @@ defmodule ScenicStarter.Scene.Sensor do
     The buttons are placeholders showing custom alignment.
   """
 
+  @moduledoc """
+  This version of `Sensor` illustrates using spec functions to
+  construct the display graph. Compare this with `Sensor` which uses
+  anonymous functions.
+  """
+
   # ============================================================================
   # setup
 
   # --------------------------------------------------------
   def init(_, opts) do
-    # Register this process so that we can reload it by killing it
-    Process.register(self(), __MODULE__)
-
     {:ok, %ViewPort.Status{size: {vp_width, _}}} =
       opts[:viewport]
       |> ViewPort.info()
@@ -78,12 +81,11 @@ defmodule ScenicStarter.Scene.Sensor do
       # NavDrop and Notes are added last so that they draw on top
       |> Nav.add_to_graph(__MODULE__)
       |> Notes.add_to_graph(@notes)
-      |> push_graph()
 
     # subscribe to the simulated temperature sensor
     Sensor.subscribe(:temperature)
 
-    {:ok, graph}
+    {:ok, graph, push: graph}
   end
 
   # --------------------------------------------------------
@@ -92,14 +94,12 @@ defmodule ScenicStarter.Scene.Sensor do
     # fahrenheit
     temperature =
       (9 / 5 * (kelvin - 273) + 32)
-      # temperature = kelvin - 273                      # celcius
+      # temperature = kelvin - 273                      # celsius
       |> :erlang.float_to_binary(decimals: 1)
 
-    graph
     # center the temperature on the viewport
-    |> Graph.modify(:temperature, &text(&1, temperature <> @degrees))
-    |> push_graph()
+    graph = Graph.modify(graph, :temperature, &text(&1, temperature <> @degrees))
 
-    {:noreply, graph}
+    {:noreply, graph, push: graph}
   end
 end

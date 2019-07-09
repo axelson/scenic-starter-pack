@@ -19,9 +19,6 @@ defmodule ScenicStarter.Component.Nav do
 
   # ----------------------------------------------------------------------------
   def init(current_scene, opts) do
-    # Register this module so that it can receive the callback from ExSync
-    Process.register(self(), __MODULE__)
-
     styles = opts[:styles] || %{}
 
     # Get the viewport width
@@ -36,6 +33,7 @@ defmodule ScenicStarter.Component.Nav do
       |> dropdown(
         {[
            {"Sensor", ScenicStarter.Scene.Sensor},
+           {"Sensor (spec)", ScenicStarter.Scene.SensorSpec},
            {"Primitives", ScenicStarter.Scene.Primitives},
            {"Components", ScenicStarter.Scene.Components},
            {"Transforms", ScenicStarter.Scene.Transforms}
@@ -45,49 +43,26 @@ defmodule ScenicStarter.Component.Nav do
       )
       |> digital_clock(text_align: :right, translate: {width - 20, 35})
       |> Scenic.Components.button("Reload", id: :reload_app_btn, width: 100, translate: {240, 15})
-      |> push_graph()
 
-    state = %{graph: graph, viewport: opts[:viewport], current_scene: current_scene}
-    {:ok, state}
+    {:ok, %{graph: graph, viewport: opts[:viewport]}, push: graph}
   end
 
   # ----------------------------------------------------------------------------
   def filter_event({:value_changed, :nav, scene}, _, %{viewport: vp} = state)
       when is_atom(scene) do
     ViewPort.set_root(vp, {scene, nil})
-    {:stop, state}
+    {:halt, state}
   end
 
   # ----------------------------------------------------------------------------
   def filter_event({:value_changed, :nav, scene}, _, %{viewport: vp} = state) do
     ViewPort.set_root(vp, scene)
-    {:stop, state}
+    {:halt, state}
   end
 
   def filter_event({:click, :reload_app_btn}, _pid, state) do
-    %{current_scene: current_scene} = state
-    reload_current_scene(current_scene)
+    GenServer.call(ScenicLiveReload, :reload_current_scene)
 
-    {:stop, state}
-  end
-
-  # Handle reload callback from ExSync
-  def handle_call(:reload_current_scene, _, state) do
-    %{current_scene: current_scene} = state
-    reload_current_scene(current_scene)
-    {:reply, nil, state}
-  end
-
-  defp reload_current_scene(current_scene) do
-    current_scene
-    |> Process.whereis()
-    |> case do
-      nil ->
-        IO.puts("Unable to reload #{current_scene} because it was not registered")
-        nil
-
-      pid ->
-        Process.exit(pid, :kill)
-    end
+    {:halt, state}
   end
 end

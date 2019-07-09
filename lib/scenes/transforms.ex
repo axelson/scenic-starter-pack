@@ -74,18 +74,13 @@ defmodule ScenicStarter.Scene.Transforms do
 
   # --------------------------------------------------------
   def init(_, _opts) do
-    # Register this process so that we can reload it by killing it
-    Process.register(self(), __MODULE__)
-
-    push_graph(@graph)
-
     state = %{
       graph: @graph,
       x: @start_x,
       y: @start_y
     }
 
-    {:ok, state}
+    {:ok, state, push: @graph}
   end
 
   # --------------------------------------------------------
@@ -97,12 +92,9 @@ defmodule ScenicStarter.Scene.Transforms do
           y: y
         } = state
       ) do
-    graph =
-      graph
-      |> Graph.modify(:ui_group, &update_opts(&1, translate: {x, y}))
-      |> push_graph()
+    graph = Graph.modify(graph, :ui_group, &update_opts(&1, translate: {x, y}))
 
-    {:stop, %{state | graph: graph, x: x}}
+    {:halt, %{state | graph: graph, x: x}, push: graph}
   end
 
   # --------------------------------------------------------
@@ -114,41 +106,29 @@ defmodule ScenicStarter.Scene.Transforms do
           x: x
         } = state
       ) do
-    graph =
-      graph
-      |> Graph.modify(:ui_group, &update_opts(&1, translate: {x, y}))
-      |> push_graph()
+    graph = Graph.modify(graph, :ui_group, &update_opts(&1, translate: {x, y}))
 
-    {:stop, %{state | graph: graph, y: y}}
+    {:halt, %{state | graph: graph, y: y}, push: graph}
   end
 
   # --------------------------------------------------------
   def filter_event({:value_changed, :scale, scale}, _, %{graph: graph} = state) do
-    graph =
-      graph
-      |> Graph.modify(:ui_group, &update_opts(&1, scale: scale))
-      |> push_graph()
+    graph = Graph.modify(graph, :ui_group, &update_opts(&1, scale: scale))
 
-    {:stop, %{state | graph: graph}}
+    {:halt, %{state | graph: graph}, push: graph}
   end
 
   # --------------------------------------------------------
   def filter_event({:value_changed, :rotate_ui, angle}, _, %{graph: graph} = state) do
-    graph =
-      graph
-      |> Graph.modify(:ui_group, &update_opts(&1, rotate: angle))
-      |> push_graph()
+    graph = Graph.modify(graph, :ui_group, &update_opts(&1, rotate: angle))
 
-    {:stop, %{state | graph: graph}}
+    {:halt, %{state | graph: graph}, push: graph}
   end
 
   # --------------------------------------------------------
   def filter_event({:value_changed, :rotate_quad, angle}, _, %{graph: graph} = state) do
-    graph =
-      graph
-      |> Graph.modify(:quad, &update_opts(&1, rotate: angle))
-      |> push_graph()
+    graph = Graph.modify(graph, :quad, &update_opts(&1, rotate: angle))
 
-    {:stop, %{state | graph: graph}}
+    {:halt, %{state | graph: graph}, push: graph}
   end
 end
